@@ -12,14 +12,6 @@ github.com/gorilla/mux
 # github.com/ppetko/gopxe v0.0.0-20181018130213-1bf4c9dccdcd
 ## explicit
 github.com/ppetko/gopxe/bbolt
-github.com/ppetko/gopxe/handlers
-# github.com/wtownse/gopxe v0.0.0-20230828134046-4c276ed9b929
-## explicit
-github.com/wtownse/gopxe/acParse
-github.com/wtownse/gopxe/conf
-github.com/wtownse/gopxe/handlers
-github.com/wtownse/gopxe/routes
-github.com/wtownse/gopxe/tftpsrv
 # golang.org/x/sys v0.0.0-20181011152604-fa43e7bc11ba
 ## explicit
 golang.org/x/sys/unix

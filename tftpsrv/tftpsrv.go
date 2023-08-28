@@ -8,7 +8,7 @@ import (
         "fmt"
 )
 
-func (port string) Run(){
+func Run(port string){
         s, err := tftp.NewServer(fmt.Sprintf(":%s",port), tftp.ServerSinglePort(true))
         if err != nil {
                 panic(err)
