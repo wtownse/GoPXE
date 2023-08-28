@@ -25,7 +25,8 @@ subnet ${SUBNET} netmask ${NETMASK} {
         option domain-search            "${DOMAIN}";
         option domain-name-servers      ${DNS};
         option time-offset              -18000;     # Eastern Standard Time
-        filename                        "pxelinux.0";
+        next-server                     $(hostname -I | awk '{print $1}');
+        filename                        "/pxelinux.0";
         range  ${DHCPDRANGE};  # reserved DHCPD range e.g. 10.17.224.100 10.17.224.150
 }
 EOF

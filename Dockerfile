@@ -10,7 +10,7 @@ FROM docker.io/dokken/centos-8
 RUN dnf update -y && yum install -y xinetd dhcp* epel-release syslinux syslinux-tftpboot  && yum clean all 
 EXPOSE 67 67/udp 69/udp 9090 9090/udp
 RUN mkdir -p /var/lib/tftpboot/pxelinux.cfg /opt/localrepo
-RUN cp -r /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot
+RUN cp -r /usr/share/syslinux/pxelinux.0 /usr/share/syslinux/ldlinux* /var/lib/tftpboot
 ADD ./pxebootImages /var/lib/tftpboot
 RUN mkdir -p /gopxe/public ; mkdir /gopxe/ksTempl
 WORKDIR /gopxe
