@@ -1,12 +1,12 @@
 FROM golang:latest as builder 
-RUN mkdir -p /go/src/github.com/ppetko/gopxe
-ADD . /go/src/github.com/ppetko/gopxe
-WORKDIR /go/src/github.com/ppetko/gopxe
+RUN mkdir -p /go/src/github.com/wtownse/gopxe
+ADD . /go/src/github.com/wtownse/gopxe
+WORKDIR /go/src/github.com/wtownse/gopxe
 RUN go test ./...
 RUN go build -o main .
 
 FROM centos:7.5.1804
-RUN yum install -y tftp tftp-server* xinetd* dhcp* epel-release syslinux  && yum clean all 
+RUN yum install -y xinetd* dhcp* epel-release syslinux  && yum clean all 
 EXPOSE 67 67/udp 69/udp 9090 9090/udp
 RUN mkdir /var/lib/tftpboot/pxelinux.cfg /opt/localrepo
 RUN cp -r /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot
