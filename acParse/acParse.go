@@ -15,7 +15,7 @@ import (
 
 const (
         serverPort = 9090
-        agentFilePath = "/opt/storage/agent-config.yaml"
+        agentFilePath = "/var/lib/tftpboot/coreos/agent-config.yaml"
 )
 
 

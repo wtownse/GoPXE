@@ -22,7 +22,7 @@ ddns-update-style none;
 subnet ${SUBNET} netmask ${NETMASK} {
         option routers                  ${ROUTER};
         option subnet-mask              ${NETMASK};
-        option domain-search            ${DOMAIN};
+        option domain-search            "${DOMAIN}";
         option domain-name-servers      ${DNS};
         option time-offset              -18000;     # Eastern Standard Time
         filename                        "pxelinux.0";
@@ -47,7 +47,7 @@ function panic(){
 
 ## Starting goPXE
 log "gopxe is starting..."
-/gopxe/main -ksURL $(hostname -I | awk '{print $1}') -wsURL $(hostname -I | awk '{print $1}') & 
+/gopxe/main -ksURL $(hostname -I | awk '{print $1}') -wsHOST $(hostname -I | awk '{print $1}') -wsPORT "8080" & 
 
 ## Start dhcpd
 log "starting dhcpd"
