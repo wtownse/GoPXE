@@ -1,4 +1,4 @@
-package acParse
+package acparse
 
 import (
         "fmt"

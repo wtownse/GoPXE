@@ -4,8 +4,8 @@ import (
 	"flag"
 	"net/http"
 
-	h "github.com/ppetko/gopxe/handlers"
-
+	h "github.com/wtownse/gopxe/handlers"
+        ac  "github.com/wtownse/gopxe/acParse"
 	//External dependencies
 	"github.com/gorilla/mux"
 )
@@ -28,6 +28,7 @@ func New() http.Handler {
 	router.HandleFunc("/bootaction", h.GetAllBA).Methods("GET")
 	router.HandleFunc("/kickstart/", h.KsGenerate)
 	router.HandleFunc("/pxeboot", h.PXEBOOT).Methods("POST")
+        router.HandleFunc("/acparse", ac.create).Methods("POST")
 	h.LoadTemplates()
 	return router
 }
