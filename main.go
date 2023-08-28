@@ -19,7 +19,7 @@ func main() {
         wg := new(sync.WaitGroup)
         wg.Add(2)
         go func(){
-        tftp.Run("69")
+        tftpsrv.Run("69")
         log.Printf("tftp listening on port: 69")
         }()
         go func(){
