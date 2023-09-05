@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
         "sync"
+	"fmt"
+	"time"
 	"net/http"
 
 	"github.com/wtownse/gopxe/conf"
@@ -28,6 +30,16 @@ func main() {
 	if err := http.ListenAndServe(":"+port, routes); err != nil {
 		log.Fatal("ListenAndServe: ", err.Error())
 	}
+        }()
+	go func(){
+	requestURL := fmt.Sprintf("http://localhost:9090/acparse")
+	time.Sleep(2 * time.Second)
+	res, err := http.Get(requestURL)
+	if err != nil {
+		fmt.Printf("error making http request: %s\n", err)
+	}
+        fmt.Printf("client: got response!\n")
+	fmt.Printf("client: status code: %d\n", res.StatusCode)
         }()
         wg.Wait()
 
