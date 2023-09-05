@@ -26,8 +26,8 @@ PXEFILE32="boot/grub2/x86_64-efi/core.efi"
 fi
 
 cat > $DHCPD_CONF << EOF
-default-lease-time 600;
-max-lease-time 7200;
+default-lease-time 300;
+max-lease-time 600;
 
 # If this DHCP server is the official DHCP server for the local
 # network, the authoritative directive should be uncommented.
