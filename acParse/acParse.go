@@ -15,7 +15,6 @@ import (
 
 const (
         serverPort = 9090
-        agentFilePath = "/var/lib/tftpboot/coreos/agent-config.yaml"
 )
 
 
@@ -37,8 +36,10 @@ func Create(http.ResponseWriter, *http.Request) {
 	//set bootoption
         webServerHost := flag.Lookup("wsHOST").Value.(flag.Getter).Get().(string)
         webServerPort := flag.Lookup("wsPORT").Value.(flag.Getter).Get().(string)
+        agentFilePath := flag.Lookup("acFILE").Value.(flag.Getter).Get().(string)
         requestURL := fmt.Sprintf("http://localhost:%d/bootaction/myfirstbootaction", serverPort)
         kernelString := fmt.Sprintf("coreos/coreos/agent.x86_64-vmlinuz coreos.live.rootfs_url=http://%s:%s/coreos/agent.x86_64-rootfs.img ignition.firstboot ignition.platform.id=metal",webServerHost,webServerPort)
+        fmt.Printf("webserverhost: " + webServerHost + " webserverport: " + webServerPort + " agent file path: " + agentFilePath + "\n\n")
         data := map[string]interface{}{  //create boot menu
         "default": "coreos",
         "label": "coreos",
@@ -97,7 +98,7 @@ func Create(http.ResponseWriter, *http.Request) {
         _, err = os.Stat(agentFilePath)
         //check if agent config file exists
         if os.IsNotExist(err){
-            fmt.Printf("file doesn't exist\n")
+            fmt.Printf(agentFilePath + "file doesn't exist\n")
         } else {
             //create host boot configuration files
             fmt.Printf("found agent config file\n")
