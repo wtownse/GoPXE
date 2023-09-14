@@ -25,6 +25,10 @@ if [[ -z "${PXEFILE32}" ]]; then
 PXEFILE32="boot/grub2/x86_64-efi/core.efi"
 fi
 
+if [[ -z "${BOOTFILEPATH}" ]]; then
+BOOTFILEPATH="/coreos/"
+fi
+
 cat > $DHCPD_CONF << EOF
 default-lease-time 300;
 max-lease-time 600;
@@ -84,7 +88,7 @@ function panic(){
 
 ## Starting goPXE
 log "gopxe is starting..."
-/gopxe/main -ksURL $(hostname -I | awk '{print $1}') -wsHOST $WSHOST -wsPORT $WSPORT & 
+/gopxe/main -ksURL $(hostname -I | awk '{print $1}') -wsHOST $WSHOST -wsPORT $WSPORT -bootFILEPath $BOOTFILEPATH & 
 
 ## Start dhcpd
 log "starting dhcpd"

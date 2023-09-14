@@ -9,7 +9,7 @@ import (
 )
 
 func Run(port string){
-        s, err := tftp.NewServer(fmt.Sprintf(":%s",port), tftp.ServerSinglePort(true))
+        s, err := tftp.NewServer(fmt.Sprintf(":%s",port), tftp.ServerSinglePort(true), tftp.ServerNet("udp4"))
         if err != nil {
                 panic(err)
         }
