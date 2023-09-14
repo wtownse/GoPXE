@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/wtownse/gopxe/conf"
+	"github.com/wtownse/gopxe/coredhcpsrv"
 	"github.com/wtownse/gopxe/routes"
 	"github.com/wtownse/gopxe/tftpsrv"
 )
@@ -30,6 +31,9 @@ func main() {
 		if err := http.ListenAndServe(":"+port, routes); err != nil {
 			log.Fatal("ListenAndServe: ", err.Error())
 		}
+	}()
+	go func() {
+		coredhcpsrv.Run()
 	}()
 	go func() {
 		requestURL := fmt.Sprintf("http://localhost:9090/acparse")
