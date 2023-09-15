@@ -1,4 +1,4 @@
-package bolt
+package bbolt
 
 import (
 	"fmt"
@@ -7,12 +7,12 @@ import (
 	"unsafe"
 )
 
-const pageHeaderSize = int(unsafe.Offsetof(((*page)(nil)).ptr))
+const pageHeaderSize = unsafe.Sizeof(page{})
 
 const minKeysPerPage = 2
 
-const branchPageElementSize = int(unsafe.Sizeof(branchPageElement{}))
-const leafPageElementSize = int(unsafe.Sizeof(leafPageElement{}))
+const branchPageElementSize = unsafe.Sizeof(branchPageElement{})
+const leafPageElementSize = unsafe.Sizeof(leafPageElement{})
 
 const (
 	branchPageFlag   = 0x01
@@ -32,7 +32,6 @@ type page struct {
 	flags    uint16
 	count    uint16
 	overflow uint32
-	ptr      uintptr
 }
 
 // typ returns a human readable page type string used for debugging.
@@ -51,13 +50,13 @@ func (p *page) typ() string {
 
 // meta returns a pointer to the metadata section of the page.
 func (p *page) meta() *meta {
-	return (*meta)(unsafe.Pointer(&p.ptr))
+	return (*meta)(unsafeAdd(unsafe.Pointer(p), unsafe.Sizeof(*p)))
 }
 
 // leafPageElement retrieves the leaf node by index
 func (p *page) leafPageElement(index uint16) *leafPageElement {
-	n := &((*[0x7FFFFFF]leafPageElement)(unsafe.Pointer(&p.ptr)))[index]
-	return n
+	return (*leafPageElement)(unsafeIndex(unsafe.Pointer(p), unsafe.Sizeof(*p),
+		leafPageElementSize, int(index)))
 }
 
 // leafPageElements retrieves a list of leaf nodes.
@@ -65,12 +64,16 @@ func (p *page) leafPageElements() []leafPageElement {
 	if p.count == 0 {
 		return nil
 	}
-	return ((*[0x7FFFFFF]leafPageElement)(unsafe.Pointer(&p.ptr)))[:]
+	var elems []leafPageElement
+	data := unsafeAdd(unsafe.Pointer(p), unsafe.Sizeof(*p))
+	unsafeSlice(unsafe.Pointer(&elems), data, int(p.count))
+	return elems
 }
 
 // branchPageElement retrieves the branch node by index
 func (p *page) branchPageElement(index uint16) *branchPageElement {
-	return &((*[0x7FFFFFF]branchPageElement)(unsafe.Pointer(&p.ptr)))[index]
+	return (*branchPageElement)(unsafeIndex(unsafe.Pointer(p), unsafe.Sizeof(*p),
+		unsafe.Sizeof(branchPageElement{}), int(index)))
 }
 
 // branchPageElements retrieves a list of branch nodes.
@@ -78,12 +81,15 @@ func (p *page) branchPageElements() []branchPageElement {
 	if p.count == 0 {
 		return nil
 	}
-	return ((*[0x7FFFFFF]branchPageElement)(unsafe.Pointer(&p.ptr)))[:]
+	var elems []branchPageElement
+	data := unsafeAdd(unsafe.Pointer(p), unsafe.Sizeof(*p))
+	unsafeSlice(unsafe.Pointer(&elems), data, int(p.count))
+	return elems
 }
 
 // dump writes n bytes of the page to STDERR as hex output.
 func (p *page) hexdump(n int) {
-	buf := (*[maxAllocSize]byte)(unsafe.Pointer(p))[:n]
+	buf := unsafeByteSlice(unsafe.Pointer(p), 0, 0, n)
 	fmt.Fprintf(os.Stderr, "%x\n", buf)
 }
 
@@ -102,8 +108,7 @@ type branchPageElement struct {
 
 // key returns a byte slice of the node key.
 func (n *branchPageElement) key() []byte {
-	buf := (*[maxAllocSize]byte)(unsafe.Pointer(n))
-	return (*[maxAllocSize]byte)(unsafe.Pointer(&buf[n.pos]))[:n.ksize]
+	return unsafeByteSlice(unsafe.Pointer(n), 0, int(n.pos), int(n.pos)+int(n.ksize))
 }
 
 // leafPageElement represents a node on a leaf page.
@@ -116,14 +121,16 @@ type leafPageElement struct {
 
 // key returns a byte slice of the node key.
 func (n *leafPageElement) key() []byte {
-	buf := (*[maxAllocSize]byte)(unsafe.Pointer(n))
-	return (*[maxAllocSize]byte)(unsafe.Pointer(&buf[n.pos]))[:n.ksize:n.ksize]
+	i := int(n.pos)
+	j := i + int(n.ksize)
+	return unsafeByteSlice(unsafe.Pointer(n), 0, i, j)
 }
 
 // value returns a byte slice of the node value.
 func (n *leafPageElement) value() []byte {
-	buf := (*[maxAllocSize]byte)(unsafe.Pointer(n))
-	return (*[maxAllocSize]byte)(unsafe.Pointer(&buf[n.pos+n.ksize]))[:n.vsize:n.vsize]
+	i := int(n.pos) + int(n.ksize)
+	j := i + int(n.vsize)
+	return unsafeByteSlice(unsafe.Pointer(n), 0, i, j)
 }
 
 // PageInfo represents human readable information about a page.
@@ -145,12 +152,33 @@ func (a pgids) merge(b pgids) pgids {
 	// Return the opposite slice if one is nil.
 	if len(a) == 0 {
 		return b
-	} else if len(b) == 0 {
+	}
+	if len(b) == 0 {
 		return a
 	}
+	merged := make(pgids, len(a)+len(b))
+	mergepgids(merged, a, b)
+	return merged
+}
 
-	// Create a list to hold all elements from both lists.
-	merged := make(pgids, 0, len(a)+len(b))
+// mergepgids copies the sorted union of a and b into dst.
+// If dst is too small, it panics.
+func mergepgids(dst, a, b pgids) {
+	if len(dst) < len(a)+len(b) {
+		panic(fmt.Errorf("mergepgids bad len %d < %d + %d", len(dst), len(a), len(b)))
+	}
+	// Copy in the opposite slice if one is nil.
+	if len(a) == 0 {
+		copy(dst, b)
+		return
+	}
+	if len(b) == 0 {
+		copy(dst, a)
+		return
+	}
+
+	// Merged will hold all elements from both lists.
+	merged := dst[:0]
 
 	// Assign lead to the slice with a lower starting value, follow to the higher value.
 	lead, follow := a, b
@@ -172,7 +200,5 @@ func (a pgids) merge(b pgids) pgids {
 	}
 
 	// Append what's left in follow.
-	merged = append(merged, follow...)
-
-	return merged
+	_ = append(merged, follow...)
 }

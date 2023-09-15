@@ -1,11 +1,13 @@
 package routes
 
 import (
-	"flag"
+	//	"flag"
 	"net/http"
 
+	flag "github.com/spf13/pflag"
+	ac "github.com/wtownse/gopxe/acParse"
 	h "github.com/wtownse/gopxe/handlers"
-        ac  "github.com/wtownse/gopxe/acParse"
+
 	//External dependencies
 	"github.com/gorilla/mux"
 )
@@ -13,7 +15,7 @@ import (
 func New() http.Handler {
 
 	const localrepo string = "/opt/localrepo"
-	tftpPath := flag.Lookup("tftpPath").Value.(flag.Getter).Get().(string)
+	tftpPath := flag.Lookup("tftpPath").Value.String()
 
 	router := mux.NewRouter()
 	router = mux.NewRouter().StrictSlash(true)
@@ -28,7 +30,7 @@ func New() http.Handler {
 	router.HandleFunc("/bootaction", h.GetAllBA).Methods("GET")
 	router.HandleFunc("/kickstart/", h.KsGenerate)
 	router.HandleFunc("/pxeboot", h.PXEBOOT).Methods("POST")
-        router.HandleFunc("/acparse", ac.Create)
+	router.HandleFunc("/acparse", ac.Create)
 	h.LoadTemplates()
 	return router
 }
