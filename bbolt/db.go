@@ -30,6 +30,14 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	err = p.CreateBucket("EFIbootactions")
+	if err != nil {
+		panic(err)
+	}
+	err = p.CreateBucket("EFIpxe")
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Get DB sessions

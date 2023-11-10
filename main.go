@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coredhcp/coredhcp/config"
 	"github.com/coredhcp/coredhcp/logger"
 	"github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
@@ -126,10 +125,6 @@ func main() {
 		log.Infof("Disabling logging to stdout/stderr")
 		logger.WithNoStdOutErr(log)
 	}
-	config, err := config.Load(*flagConfig)
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
 
 	//conf.Setup()
 	port := flag.Lookup("port").Value
@@ -157,7 +152,7 @@ func main() {
 		log.Printf("client: status code: %d\n", res.StatusCode)
 	}()
 	go func() {
-		coredhcpsrv.Run(*log, config, *flagDynamicConfig, getDhcpFlags())
+		coredhcpsrv.Run(*log, *flagConfig, *flagDynamicConfig, getDhcpFlags())
 	}()
 
 	wg.Wait()

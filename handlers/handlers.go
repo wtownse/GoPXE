@@ -21,6 +21,10 @@ var (
 	templates map[string]*template.Template
 )
 
+const (
+	tftpROOT = "/var/lib/tftpboot/"
+)
+
 var log = logger.GetLogger("gopxe")
 
 type PXEBOOTTYPE struct {
@@ -58,6 +62,10 @@ func LoadTemplates() {
 
 func getBucket() string {
 	return flag.Lookup("bucket").Value.String()
+}
+
+func getEFIBucket() string {
+	return flag.Lookup("EFIbucket").Value.String()
 }
 
 func checkError(err error) {
@@ -168,8 +176,10 @@ func PutBA(w http.ResponseWriter, r *http.Request) {
 	}
 
 	value := fmt.Sprintf("default %s\n label %s\n MENU LABEL %s\n KERNEL %s\n APPEND ksdevice=%s ip=%s load_ramdisk=%s initrd=%s", action.Default, action.Label, action.Menu, action.Kernel, action.KSDevice, action.IP, action.LoadRamdisk, action.Initrd)
+	valueEFI := fmt.Sprintf("set default=0\n set timeout=60\n menuentry %s {\n linuxeefi %s\n initrdefi %s\n}", action.Label, action.Kernel, action.Initrd)
 
 	err1 := conn.PutBootAction(getBucket(), key, value)
+	err1 = conn.PutBootAction(getEFIBucket(), key, valueEFI)
 	if err1 != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
@@ -181,6 +191,7 @@ func PutBA(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, `{"Status":"bootaction recorded"}`)
 		return
 	}
+
 }
 
 func StatusHandler(w http.ResponseWriter, r *http.Request) {
@@ -254,6 +265,7 @@ func PXEBOOT(w http.ResponseWriter, r *http.Request) {
 	ksURL := flag.Lookup("ksURL").Value.String()
 	ksPort := flag.Lookup("port").Value.String()
 	filePath := tftpPath + pxe.UUID
+	EFIfilePath := tftpROOT + "grub.cfg-01-" + pxe.UUID
 	var kickstart string
 
 	if pxe.IP != "" && pxe.MASK != "" && pxe.NS1 != "" && pxe.NS2 != "" && pxe.GW != "" {
@@ -263,6 +275,7 @@ func PXEBOOT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err, results := conn.GetBootAction("bootactions", pxe.BootAction)
+	err, EFIresults := conn.GetBootAction("EFIbootactions", pxe.BootAction)
 	if err != nil {
 		panic(err)
 	}
@@ -280,6 +293,7 @@ func PXEBOOT(w http.ResponseWriter, r *http.Request) {
 	checkError(err)
 
 	err = mkBootEntry(filePath, bootAction)
+	err = mkBootEntry(EFIfilePath, EFIresults)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
