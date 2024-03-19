@@ -1,10 +1,11 @@
 package db
 
 import (
-	_ "flag"
-	"log"
+	//_ "flag"
 
-	bolt "github.com/coreos/bbolt"
+	"github.com/coredhcp/coredhcp/logger"
+
+	bolt "go.etcd.io/bbolt"
 )
 
 // DB Connection
@@ -16,6 +17,7 @@ type BoltDB struct {
 // https://stackoverflow.com/questions/26537806/how-to-access-flags-outside-of-main-package
 // dbName variable
 var dbName = "gopxe.db"
+var log = logger.GetLogger("gopxe")
 
 // DB initilization amd creatin database buckets
 func init() {
@@ -25,6 +27,14 @@ func init() {
 		panic(err)
 	}
 	err = p.CreateBucket("pxe")
+	if err != nil {
+		panic(err)
+	}
+	err = p.CreateBucket("efibootactions")
+	if err != nil {
+		panic(err)
+	}
+	err = p.CreateBucket("efipxe")
 	if err != nil {
 		panic(err)
 	}

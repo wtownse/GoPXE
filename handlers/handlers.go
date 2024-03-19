@@ -65,7 +65,7 @@ func getBucket() string {
 }
 
 func getEFIBucket() string {
-	return flag.Lookup("EFIbucket").Value.String()
+	return flag.Lookup("efibucket").Value.String()
 }
 
 func checkError(err error) {
@@ -107,6 +107,7 @@ func GetAllBA(w http.ResponseWriter, r *http.Request) {
 	var actions map[string]string
 
 	err, actions := conn.GetAllBootActions(getBucket())
+	getEFIBucket()
 	if err != nil {
 		log.Printf("Couldn't retrieve bootaction %v \n", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -130,6 +131,7 @@ func GetBA(w http.ResponseWriter, r *http.Request) {
 	key := vars["key"]
 
 	err, v := conn.GetBootAction(getBucket(), key)
+	getEFIBucket()
 	if err != nil {
 		log.Printf("Couldn't retrieve bootaction %v \n", err)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -176,8 +178,9 @@ func PutBA(w http.ResponseWriter, r *http.Request) {
 	}
 
 	value := fmt.Sprintf("default %s\n label %s\n MENU LABEL %s\n KERNEL %s\n APPEND ksdevice=%s ip=%s load_ramdisk=%s initrd=%s", action.Default, action.Label, action.Menu, action.Kernel, action.KSDevice, action.IP, action.LoadRamdisk, action.Initrd)
-	valueEFI := fmt.Sprintf("set default=0\n set timeout=60\n menuentry %s {\n linuxeefi %s\n initrdefi %s\n}", action.Label, action.Kernel, action.Initrd)
-
+	valueEFI := fmt.Sprintf(" set default=0\n set timeout=60\n menuentry %s {\n linuxeefi %s\n initrdefi %s\n}", action.Label, action.Kernel, action.Initrd)
+	log.Printf(valueEFI)
+	log.Printf(getEFIBucket())
 	err1 := conn.PutBootAction(getBucket(), key, value)
 	err1 = conn.PutBootAction(getEFIBucket(), key, valueEFI)
 	if err1 != nil {
@@ -265,7 +268,7 @@ func PXEBOOT(w http.ResponseWriter, r *http.Request) {
 	ksURL := flag.Lookup("ksURL").Value.String()
 	ksPort := flag.Lookup("port").Value.String()
 	filePath := tftpPath + pxe.UUID
-	EFIfilePath := tftpROOT + "grub.cfg-01-" + pxe.UUID
+	EFIfilePath := tftpROOT + "grub.cfg-" + pxe.UUID
 	var kickstart string
 
 	if pxe.IP != "" && pxe.MASK != "" && pxe.NS1 != "" && pxe.NS2 != "" && pxe.GW != "" {
@@ -275,7 +278,10 @@ func PXEBOOT(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err, results := conn.GetBootAction("bootactions", pxe.BootAction)
-	err, EFIresults := conn.GetBootAction("EFIbootactions", pxe.BootAction)
+	if err != nil {
+		panic(err)
+	}
+	err, EFIresults := conn.GetBootAction("efibootactions", pxe.BootAction)
 	if err != nil {
 		panic(err)
 	}
@@ -290,6 +296,8 @@ func PXEBOOT(w http.ResponseWriter, r *http.Request) {
 
 	// Record the pxeboot action in the db
 	err = conn.PutBootAction("pxe", pxe.UUID, bootAction)
+	checkError(err)
+	err = conn.PutBootAction("efipxe", pxe.UUID, EFIresults)
 	checkError(err)
 
 	err = mkBootEntry(filePath, bootAction)

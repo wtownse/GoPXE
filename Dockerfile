@@ -13,6 +13,7 @@ shim-ia32 && yum clean all
 RUN grub2-mknetdir --net-directory /var/lib/tftpboot/
 RUN mkdir -p /var/lib/tftpboot/pxelinux.cfg /opt/localrepo
 RUN cp -r /usr/share/syslinux/pxelinux.0 /usr/share/syslinux/ldlinux* /var/lib/tftpboot
+RUN cd /var/lib/tftpboot && wget http://boot.ipxe.org/ipxe.efi
 ADD ./pxebootImages /var/lib/tftpboot
 
 FROM docker.io/dokken/centos-8

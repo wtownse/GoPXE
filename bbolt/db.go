@@ -30,11 +30,11 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	err = p.CreateBucket("EFIbootactions")
+	err = p.CreateBucket("efibootactions")
 	if err != nil {
 		panic(err)
 	}
-	err = p.CreateBucket("EFIpxe")
+	err = p.CreateBucket("efipxe")
 	if err != nil {
 		panic(err)
 	}
