@@ -7,6 +7,7 @@ import (
 	flag "github.com/spf13/pflag"
 	ac "github.com/wtownse/gopxe/acParse"
 	h "github.com/wtownse/gopxe/handlers"
+	static "github.com/wtownse/gopxe/staticDHCP"
 
 	//External dependencies
 	"github.com/gorilla/mux"
