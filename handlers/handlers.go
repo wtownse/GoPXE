@@ -12,7 +12,9 @@ import (
 
 	"github.com/coredhcp/coredhcp/logger"
 	"github.com/gorilla/mux"
-	db "github.com/ppetko/gopxe/bbolt"
+
+	db "github.com/wtownse/gopxe/bbolt"
+	//db "github.com/coreos/bbolt"
 	flag "github.com/spf13/pflag"
 )
 
