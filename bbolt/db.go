@@ -5,7 +5,7 @@ import (
 
 	"github.com/coredhcp/coredhcp/logger"
 
-	bolt "go.etcd.io/bbolt"
+	bolt "github.com/coreos/bbolt"
 )
 
 // DB Connection
