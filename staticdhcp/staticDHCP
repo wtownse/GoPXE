@@ -1,0 +1,56 @@
+package staticDHCP
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	flag "github.com/spf13/pflag"
+	"gopkg.in/yaml.v3"
+
+	"github.com/coredhcp/coredhcp/logger"
+	"github.com/coredhcp/coredhcp/plugins"
+)
+
+var log = logger.GetLogger("staticdhcp")
+// StaticRecords holds a MAC -> IP address mapping
+var StaticRecords map[string]net.IP
+pl_file = RegisteredPlugins["file"]
+// StaticDHCP is a plugin that assigns static IP addresses to clients based on their MAC address.
+// It reads the configuration from a file and assigns the IP addresses to the clients.
+// The configuration file is a JSON file with the following format:
+// {
+//     "clients": [
+//         {
+//             "mac": "00:00:00:00:00:00",
+//             "ip": "
+//         },
+//         {
+//             "mac": "00:00:00:00:00:01",
+//             "ip": "
+//         }
+//     ]
+// }
+// type StaticDHCP struct {
+// 	// File is the path to the configuration file.
+// 	File string
+// 	// Clients is a map of MAC addresses to IP addresses.
+// 	Clients map[string]string
+// }
+
+// // New creates a new StaticDHCP plugin.
+// func New(file string) *StaticDHCP {
+// 	return &StaticDHCP{
+// 		File:    file,
+// 		Clients: make(map[string]string),
+// 	}
+// }
+var currentRecords = make(map[string]string)
+currentRecords = pl_file.StaticRecords	// Get the current records from the file plugin
+log.Println("Current records: ", currentRecords)
+
