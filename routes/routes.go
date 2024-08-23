@@ -7,7 +7,6 @@ import (
 	flag "github.com/spf13/pflag"
 	ac "github.com/wtownse/gopxe/acParse"
 	h "github.com/wtownse/gopxe/handlers"
-	static "github.com/wtownse/gopxe/staticDHCP"
 
 	//External dependencies
 	"github.com/gorilla/mux"
@@ -32,6 +31,7 @@ func New() http.Handler {
 	router.HandleFunc("/kickstart/", h.KsGenerate)
 	router.HandleFunc("/pxeboot", h.PXEBOOT).Methods("POST")
 	router.HandleFunc("/acparse", ac.Create)
+	router.HandleFunc("/staticdhcp", static.staticDHCP).Methods("POST")
 	h.LoadTemplates()
 	return router
 }
