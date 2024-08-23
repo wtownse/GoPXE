@@ -4,6 +4,8 @@ github.com/chappjc/logrus-prefix v0.0.0-20180227015900-3a1d64819adb h1:aZTKxMmin
 github.com/chappjc/logrus-prefix v0.0.0-20180227015900-3a1d64819adb/go.mod h1:xzXc1S/L+64uglB3pw54o8kqyM6KFYpTeC9Q6+qZIu8=
 github.com/coredhcp/coredhcp v0.0.0-20240709092356-bd8c8089a5ab h1:G9Sl6Zp2h3SdNsJ9xaxbkNHKQii3Kh5Hr8Xg6MocB6o=
 github.com/coredhcp/coredhcp v0.0.0-20240709092356-bd8c8089a5ab/go.mod h1:0izyfAWbLc5IxqnQFI83BinM67a+iEccxK1WDxFhnSY=
+github.com/coreos/bbolt v1.3.11 h1:gwRaJVU2Ni1hknIO+IxBwE0t6BPBE61X3U06sb+mNkg=
+github.com/coreos/bbolt v1.3.11/go.mod h1:dksAq7YMXoljX0xu6VF5DMZGbhYYoLUalEiSySYAS4I=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
