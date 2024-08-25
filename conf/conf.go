@@ -16,6 +16,7 @@ var (
 	acFILE       string
 	bootFILEPath string
 	webFILEPath  string
+	staticLease  string
 )
 
 const (
@@ -35,6 +36,7 @@ func Setup() {
 	flag.StringVar(&acFILE, "acFILE", tftpROOT+"coreos/configs/agent-config.yaml", "agent config file path relative to tftpROOT /var/lib/tftpboot/")
 	flag.StringVar(&bootFILEPath, "bootFILEPath", "/", " path to pxe boot files")
 	flag.StringVar(&webFILEPath, "webFILEPath", "/", "path to web root folder")
+	flag.StringVar(&staticLease, "staticLease", "leases.txt", "static lease file")
 	// Parsing flags
 	flag.Parse()
 }

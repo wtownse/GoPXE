@@ -47,6 +47,7 @@ var (
 	acFILE            = flag.StringP("acFILE", "a", tftpROOT+"coreos/configs/agent-config.yaml", "agent config file path relative to tftpROOT /var/lib/tftpboot/")
 	bootFILEPath      = flag.StringP("bootFILEPath", "b", "/", " path to pxe boot files")
 	webFILEPath       = flag.StringP("webFILEPath", "w", "/", "path to web root folder")
+	staticLease       = flag.StringP("staticLease", "m", "leases.txt", "static lease file")
 )
 
 var logLevels = map[string]func(*logrus.Logger){

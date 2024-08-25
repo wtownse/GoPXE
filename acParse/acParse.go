@@ -113,7 +113,7 @@ func Create(http.ResponseWriter, *http.Request) {
 	} else {
 		//create host boot configuration files
 		log.Printf("found agent config file\n")
-		agentConfigData, err := ioutil.ReadFile(agentFilePath) //Read agent-config file
+		agentConfigData, err := os.ReadFile(agentFilePath) //Read agent-config file
 		if err != nil {
 			log.Printf("can't read file")
 		}

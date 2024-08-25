@@ -20,7 +20,7 @@ import (
 
 var (
 	conn      db.BoltDB
-	templates map[string]*template.Template
+	Templates map[string]*template.Template
 )
 
 const (
@@ -56,10 +56,11 @@ type ACTIONTYPE struct {
 
 func LoadTemplates() {
 	var baseTemplate = "public/layouts/base.html"
-	templates = make(map[string]*template.Template)
-	templates["index"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/index.html"))
-	templates["actions"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/bootactions.html"))
-	templates["pxeboot"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/pxeboot.html"))
+	Templates = make(map[string]*template.Template)
+	Templates["index"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/index.html"))
+	Templates["actions"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/bootactions.html"))
+	Templates["pxeboot"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/pxeboot.html"))
+	Templates["pxeinfo"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/pxeinfo.html"))
 }
 
 func getBucket() string {
@@ -207,7 +208,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 
 func Index(w http.ResponseWriter, r *http.Request) {
 
-	if err := templates["index"].Execute(w, ""); err != nil {
+	if err := Templates["index"].Execute(w, ""); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -215,7 +216,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func BootactionHandler(w http.ResponseWriter, r *http.Request) {
 	_, v := conn.GetAllBootActions("bootactions")
 
-	if err := templates["actions"].Execute(w, v); err != nil {
+	if err := Templates["actions"].Execute(w, v); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -223,7 +224,7 @@ func BootactionHandler(w http.ResponseWriter, r *http.Request) {
 func PxebootHandler(w http.ResponseWriter, r *http.Request) {
 	_, v := conn.GetAllBootActions("pxe")
 
-	if err := templates["pxeboot"].Execute(w, v); err != nil {
+	if err := Templates["pxeboot"].Execute(w, v); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

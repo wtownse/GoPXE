@@ -1,6 +1,8 @@
 module github.com/wtownse/gopxe
 
-go 1.20
+go 1.22
+
+toolchain go1.23.0
 
 replace github.com/coreos/bbolt v1.3.11 => go.etcd.io/bbolt v1.3.11
 
@@ -10,6 +12,7 @@ require (
 	github.com/coredhcp/coredhcp v0.0.0-20240709092356-bd8c8089a5ab
 	github.com/coreos/bbolt v1.3.11
 	github.com/gorilla/mux v1.8.1
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/pflag v1.0.6-0.20201009195203-85dd5c8bc61c
 	gopkg.in/yaml.v3 v3.0.1
@@ -27,7 +30,6 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/nxadm/tail v1.4.11 // indirect
