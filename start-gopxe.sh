@@ -33,6 +33,10 @@ if [[ -z "${WFILEPATH}" ]]; then
 WFILEPATH="/coreos/"
 fi
 
+if [[ -z "${LISTENADDRESS}" ]]; then
+LISTENADDRESS="0.0.0.0"
+fi
+
 cat > $DHCPD_CONF << EOF
 default-lease-time 300;
 max-lease-time 600;
@@ -93,7 +97,7 @@ function panic(){
 ## Starting goPXE
 log "gopxe is starting..."
 #/gopxe/main -ksURL $(hostname -I | awk '{print $1}') -wsHOST $WSHOST -wsPORT $WSPORT -bootFILEPath $BOOTFILEPATH
-/gopxe/main  -K $(hostname -I | awk '{print $1}') -R "$DHCPRANGE" -M $NETMASK -G $ROUTER -D $DNS --port "9090" -s $WSHOST -r $WSPORT  -U -a /var/lib/tftpboot/coreos/agent-config.yaml -b $BOOTFILEPATH -w $WFILEPATH
+/gopxe/main  -K $(hostname -I | awk '{print $1}') -i "$LISTENADDRESS" -R "$DHCPRANGE" -M $NETMASK -G $ROUTER -D $DNS --port "9090" -s $WSHOST -r $WSPORT  -U -a /var/lib/tftpboot/coreos/agent-config.yaml -b $BOOTFILEPATH -w $WFILEPATH
 
 ## Start dhcpd
 #log "starting dhcpd"

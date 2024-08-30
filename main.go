@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -48,6 +50,7 @@ var (
 	bootFILEPath      = flag.StringP("bootFILEPath", "b", "/", " path to pxe boot files")
 	webFILEPath       = flag.StringP("webFILEPath", "w", "/", "path to web root folder")
 	staticLease       = flag.StringP("staticLease", "m", "leases.txt", "static lease file")
+	listenAddress     = flag.StringP("listenAddress", "i", "0.0.0.0", "listen address")
 )
 
 var logLevels = map[string]func(*logrus.Logger){
@@ -67,9 +70,45 @@ func getLogLevels() []string {
 	return levels
 }
 
-func getDhcpFlags() map[string]interface{} {
-	flag.Parse()
-	DNS, NBP, RANGE, NETMASK, ROUTER, SID, LEASE := *dns, *nbpFile, *dhcpRange, *dhcpNetmask, *dhcpRouter, *dhcpServerID, *dhcpLeaseDuration
+func GetInterface(log logrus.Entry, listenaddress string) (intf string, err error) {
+	var (
+		ief      *net.Interface
+		addrs    []net.Addr
+		ipv4Addr net.IP
+		iname    string
+	)
+	// Get the list of all interfaces
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		log.Println("Error unable to get interfaces: ", err)
+		return
+	}
+	// Print the name and index of each interface
+	for _, i := range interfaces {
+		log.Printf("Name: %v\n", i.Name)
+		log.Printf("Index: %v\n", i.Index)
+		if ief, err = net.InterfaceByName(i.Name); err != nil { // get interface
+			continue
+		}
+		if addrs, err = ief.Addrs(); err != nil { // get addresses
+			log.Printf("Error unable to get addresses: %v\n", err)
+			continue
+		}
+		for _, addr := range addrs { // get ipv4 address
+			if ipv4Addr = addr.(*net.IPNet).IP.To4(); ipv4Addr != nil {
+				if ipv4Addr.String() == listenaddress {
+					return i.Name, nil
+				}
+			}
+		}
+	}
+	return iname, errors.New("unable to find interface")
+}
+
+func getDhcpFlags(intf string) map[string]interface{} {
+
+	DNS, NBP, RANGE, NETMASK, ROUTER, SID, LEASE, STATICLEASE := *dns, *nbpFile, *dhcpRange, *dhcpNetmask, *dhcpRouter, *dhcpServerID, *dhcpLeaseDuration, *staticLease
+
 	ovr := map[string]interface{}{
 		//		"server6": map[string]interface{}{
 		//			"plugins": []map[string]string{
@@ -79,6 +118,7 @@ func getDhcpFlags() map[string]interface{} {
 		//			},
 		//		},
 		"server4": map[string]interface{}{
+			"listen": "%" + intf,
 			"plugins": []map[string]string{
 				{
 					"lease_time": LEASE,
@@ -96,10 +136,13 @@ func getDhcpFlags() map[string]interface{} {
 					"netmask": NETMASK,
 				},
 				{
-					"range": "leases.txt " + RANGE + " 60s",
+					"range": "leases.db " + RANGE + " 60s",
 				},
 				{
 					"nbp": NBP,
+				},
+				{
+					"file": STATICLEASE + " [autorefresh]",
 				},
 			},
 		},
@@ -154,7 +197,12 @@ func main() {
 		log.Printf("client: status code: %d\n", res.StatusCode)
 	}()
 	go func() {
-		coredhcpsrv.Run(*log, *flagConfig, *flagDynamicConfig, getDhcpFlags())
+		flag.Parse()
+		listeninterface, err := GetInterface(*log, *listenAddress)
+		if err != nil {
+			log.Println("Error unable to get interface: ", err)
+		}
+		coredhcpsrv.Run(*log, *flagConfig, *flagDynamicConfig, getDhcpFlags(listeninterface))
 	}()
 
 	wg.Wait()

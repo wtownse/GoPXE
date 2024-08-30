@@ -30,6 +30,12 @@ type macip struct {
 	Ip  string `json:"ip"`
 }
 
+type dhclientInfo struct {
+	Arch     string
+	Ip       string
+	Hostname string
+}
+
 var recLock sync.RWMutex
 
 func mkStaticDhcpEntry(path string, append string) error {
@@ -102,17 +108,22 @@ func GetDHCPEntry(rw http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	mac := vars["mac"]
 	ip := p.Recordsv4[mac]
+	arch := p.Recordsv4[mac].Arch
 	rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	rw.WriteHeader(http.StatusOK)
 	io.WriteString(rw, ip.IP.String())
-	log.Printf("MAC: %v IP: %v", mac, ip)
+	log.Printf("MAC: %v IP: %v Arch: %v", mac, ip, arch)
 
 }
 func GetDHCPEntriesJSON(rw http.ResponseWriter, req *http.Request) {
 	p := pl_range.PS
-	macips := make(map[string]string)
+	macips := make(map[string]dhclientInfo)
 	for k, v := range p.Recordsv4 {
-		macips[k] = v.IP.String()
+		macips[k] = dhclientInfo{
+			Arch:     v.Arch,
+			Ip:       v.IP.String(),
+			Hostname: v.Hostname,
+		}
 	}
 	jsonData, err := json.Marshal(macips)
 	if err == nil {
@@ -124,19 +135,41 @@ func GetDHCPEntriesJSON(rw http.ResponseWriter, req *http.Request) {
 }
 func GetDHCPEntries(rw http.ResponseWriter, req *http.Request) {
 	p := pl_range.PS
-	macips := make(map[string]string)
+	macips := make(map[string]dhclientInfo)
 	for k, v := range p.Recordsv4 {
-		macips[k] = v.IP.String()
+		macips[k] = dhclientInfo{
+			Arch:     v.Arch,
+			Ip:       v.IP.String(),
+			Hostname: v.Hostname,
+		}
 	}
 	if err := handlers.Templates["pxeinfo"].Execute(rw, macips); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 	}
 }
 func StaticDHCP(rw http.ResponseWriter, req *http.Request) {
-	//d := json.NewDecoder(req.Body)
-	//data := macip{}
+	d := json.NewDecoder(req.Body)
+	var macip macip
+	err := d.Decode(&macip)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Printf("StaticRecord: %v", macip)
+	log.Printf("%v %v", macip.Mac, macip.Ip)
+	// validate mac address and return if invalid
+	if _, err := net.ParseMAC(macip.Mac); err != nil {
+		log.Printf("%v is an invalid mac address", macip.Mac)
+		return
+	}
+	// validate ip address and return if invalid
+	if err := net.ParseIP(macip.Ip); err != nil {
+		log.Printf("%v is an invalid ip address", macip.Ip)
+		return
+	}
 	p := pl_range.PS
-	db, err := loadDB("dhcp.db")
+
+	db := p.Leasedb
 	if err != nil {
 		log.Printf("Failed to load database: %v", err)
 	}
@@ -147,21 +180,11 @@ func StaticDHCP(rw http.ResponseWriter, req *http.Request) {
 	//log.Printf("Loaded %d DHCPv4 leases from %s", len(records), "leases.db")
 	p.Recordsv4 = records
 
-	var macip macip
-	body, err := io.ReadAll(req.Body)
-	if err != nil {
-		log.Printf("Failed to read the request body: %v", err)
-	}
-	log.Printf("Request body: %v", string(body))
-	err = json.Unmarshal(body, &macip)
-	if err != nil {
-		log.Printf("Failed to decode the request body: %v", err)
-	}
-
 	pl_Record := pl_range.Record{
 		IP:       net.ParseIP(macip.Ip),
 		Expires:  int(time.Now().Add(p.LeaseTime).Unix()),
 		Hostname: "",
+		Arch:     "",
 	}
 	addr, _ := net.ParseMAC(macip.Mac)
 	_, ok := p.Recordsv4[addr.String()]
