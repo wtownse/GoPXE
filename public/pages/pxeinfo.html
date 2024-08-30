@@ -1,0 +1,28 @@
+{{ define "content" }}
+
+<div class="container">
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Mac</th>
+      <th scope="col">Ip</th>
+      <th scope="col">Arch</th>
+      <th scope="col">Hostname</th>
+    </tr>
+  </thead>
+    {{ range $Mac, $Ip := . }}
+  <tbody>
+    <tr>
+      <td>{{ $Mac }}</td>
+      <td>{{ $Ip.Ip }} </td>
+      <td>{{ $Ip.Arch }}</td>
+      <td>{{ $Ip.Hostname }}</td>
+    </tr>
+  </tbody>
+    {{ end }}
+</table>
+<div class="dropdown-divider"></div>
+</div>
+
+{{ end }}
