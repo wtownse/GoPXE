@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/coredhcp/coredhcp/logger"
-	pl_range "github.com/coredhcp/coredhcp/plugins/range"
 	mux "github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	pl_range "github.com/wtownse/gopxe/coredhcp/plugins/range"
 	"github.com/wtownse/gopxe/handlers"
 )
 
