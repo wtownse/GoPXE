@@ -1,0 +1,39 @@
+{{ define "content" }}
+
+    <head>
+    <title></title>
+    <style>.center {
+        margin-left: auto;
+        margin-right: auto;
+      }</style>
+    </head>
+    <body>
+        <h2 style="text-align: center;">Create Boot Action</h2>
+        <script>
+       function setKey() { 
+        var action_src = "/show/"+ document.getElementsByName("BAName")[0].value; 
+        var x = document.getElementById("BA");
+        x.action = action_src;
+        
+        alert("The form was submitted");
+        
+        
+       }
+       </script>
+        <form name="BA" id="BA" onsubmit="setKey()" method="POST">
+        <table class="center">
+            <tr><td><label>default menu item</label></td><td><input type="text" name="default" defaultValue="linux" placeholder="linux" id="default" value="default"/></td></tr>
+            <tr><td><label>label</label></td><td><input type="text" name="label" defaultValue="linux" placeholder="linux"  /></td></tr>
+            <tr><td><label>menu</label></td><td><input type="text" name="menu" defaultValue="rocky" placeholder="rocky"/></td></tr>
+            <tr><td><label>kernel</label></td><td><input type="text" name="kernel" defaultValue="centos7/vmlinuz" placeholder="centos7/vmlinuz"/></td></tr>
+            <tr><td><label>ksdevice</label></td><td><input type="text" name="ksdevice" defaultValue="link" placeholder="dhcp"/></td></tr>
+            <tr><td><label>ip</label></td><td><input type="text" name="ip" defaultValue="dhcp" placeholder="dhcp" /></td></tr>
+            <tr><td><label>load_ramdisk</label></td><td><input type="text" name="load_ramdisk" defaultValue="1" placeholder="1" /></td></tr>
+            <tr><td><label>initrd</label></td><td><input type="text" name="initrd" defaultValue="centos7/initrd.img" placeholder="centos7/initrd.img" /></tr></td>
+            <tr><td><label>Boot Action Name</label></td><td><input type="text" name="BAName" defaultValue="myfirstbootaction" placeholder="myfirstbootaction"  /></tr></td>
+            <tr><td><button type="submit">Submit</button></td></tr>
+        </table>
+        </form>
+        
+    </body>
+    {{ end }}
