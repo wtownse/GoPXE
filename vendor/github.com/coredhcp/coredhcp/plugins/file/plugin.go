@@ -6,20 +6,20 @@
 // The mapping is stored in a text file, where each mapping is described by one line containing
 // two fields separated by spaces: MAC address, and IP address. For example:
 //
-//	$ cat file_leases.txt
-//	00:11:22:33:44:55 10.0.0.1
-//	01:23:45:67:89:01 10.0.10.10
+//  $ cat file_leases.txt
+//  00:11:22:33:44:55 10.0.0.1
+//  01:23:45:67:89:01 10.0.10.10
 //
 // To specify the plugin configuration in the server6/server4 sections of the config file, just
 // pass the leases file name as plugin argument, e.g.:
 //
-//	$ cat config.yml
+//  $ cat config.yml
 //
-//	server6:
-//	   ...
-//	   plugins:
-//	     - file: "file_leases.txt" [autorefresh]
-//	   ...
+//  server6:
+//     ...
+//     plugins:
+//       - file: "file_leases.txt" [autorefresh]
+//     ...
 //
 // If the file path is not absolute, it is relative to the cwd where coredhcp is run.
 //
@@ -40,7 +40,6 @@ import (
 	"github.com/coredhcp/coredhcp/handler"
 	"github.com/coredhcp/coredhcp/logger"
 	"github.com/coredhcp/coredhcp/plugins"
-	pl_range "github.com/coredhcp/coredhcp/plugins/range"
 	"github.com/fsnotify/fsnotify"
 	"github.com/insomniacslk/dhcp/dhcpv4"
 	"github.com/insomniacslk/dhcp/dhcpv6"
@@ -64,9 +63,6 @@ var recLock sync.RWMutex
 // StaticRecords holds a MAC -> IP address mapping
 var StaticRecords map[string]net.IP
 
-// pointer to the range plugin
-var p = pl_range.PS
-
 // DHCPv6Records and DHCPv4Records are mappings between MAC addresses in
 // form of a string, to network configurations.
 var (
@@ -74,28 +70,12 @@ var (
 	DHCPv4Records map[string]net.IP
 )
 
-func GetFileContents(filename string) ([]byte, error) {
-	log.Infof("reading leases from %s", filename)
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Printf("Cannot create file %v", err)
-		return nil, err
-	}
-	defer file.Close()
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		log.Printf("Cannot read file %v", err)
-		return nil, err
-	}
-	defer file.Close()
-	return data, err
-}
-
 // LoadDHCPv4Records loads the DHCPv4Records global map with records stored on
 // the specified file. The records have to be one per line, a mac address and an
 // IPv4 address.
 func LoadDHCPv4Records(filename string) (map[string]net.IP, error) {
-	data, err := GetFileContents(filename)
+	log.Infof("reading leases from %s", filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -122,23 +102,7 @@ func LoadDHCPv4Records(filename string) (map[string]net.IP, error) {
 		}
 		records[hwaddr.String()] = ipaddr
 	}
-	for mac, ip := range records {
 
-		pl_Record := pl_range.Record{
-			IP:       ip,
-			Expires:  int(time.Now().Add(p.LeaseTime).Unix()),
-			Hostname: "",
-		}
-		addr, _ := net.ParseMAC(mac)
-		_, ok := p.Recordsv4[addr.String()]
-		if ok {
-			log.Printf("MAC address already exists")
-		} else {
-			log.Printf("MAC address does not exist")
-		}
-		pl_range.DeleteEntry(p.Leasedb, addr.String())
-		p.Recordsv4[addr.String()] = &pl_Record
-	}
 	return records, nil
 }
 
@@ -146,7 +110,8 @@ func LoadDHCPv4Records(filename string) (map[string]net.IP, error) {
 // the specified file. The records have to be one per line, a mac address and an
 // IPv6 address.
 func LoadDHCPv6Records(filename string) (map[string]net.IP, error) {
-	data, err := GetFileContents(filename)
+	log.Infof("reading leases from %s", filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}

@@ -29,12 +29,11 @@ var Plugin = plugins.Plugin{
 	Setup4: setupRange,
 }
 
-// Record holds an IP lease record
+//Record holds an IP lease record
 type Record struct {
-	IP       net.IP
-	Expires  int
-	Hostname string
-	Arch     string
+	IP      net.IP
+	expires int
+	hostname string
 }
 
 // PluginState is the data held by an instance of the range plugin
@@ -44,21 +43,8 @@ type PluginState struct {
 	// Recordsv4 holds a MAC -> IP address and lease time mapping
 	Recordsv4 map[string]*Record
 	LeaseTime time.Duration
-	Leasedb   *sql.DB
+	leasedb   *sql.DB
 	allocator allocators.Allocator
-}
-
-var p PluginState
-
-var PS = &p
-
-func (p *PluginState) UpdateRecordsv4(newmac Record, newaddr net.HardwareAddr) error {
-	p.Recordsv4[newaddr.String()] = &newmac
-	log.Printf("Updated IP address %s for MAC %s", newmac.IP, newaddr.String())
-	for k, v := range p.Recordsv4 {
-		log.Printf("MAC: %s, IP: %s, Expires: %d, Hostname: %s", k, v.IP, v.Expires, v.Hostname)
-	}
-	return nil
 }
 
 // Handler4 handles DHCPv4 packets for the range plugin
@@ -67,9 +53,6 @@ func (p *PluginState) Handler4(req, resp *dhcpv4.DHCPv4) (*dhcpv4.DHCPv4, bool) 
 	defer p.Unlock()
 	record, ok := p.Recordsv4[req.ClientHWAddr.String()]
 	hostname := req.HostName()
-
-	decap := req.Options.Get(dhcpv4.OptionClassIdentifier)
-	log.Printf("Decap: %v", string(decap))
 	if !ok {
 		// Allocating new address since there isn't one allocated
 		log.Printf("MAC address %s is new, leasing new IPv4 address", req.ClientHWAddr.String())
@@ -79,12 +62,11 @@ func (p *PluginState) Handler4(req, resp *dhcpv4.DHCPv4) (*dhcpv4.DHCPv4, bool) 
 			return nil, true
 		}
 		rec := Record{
-			IP:       ip.IP.To4(),
-			Expires:  int(time.Now().Add(p.LeaseTime).Unix()),
-			Hostname: hostname,
-			Arch:     string(decap),
+			IP:      ip.IP.To4(),
+			expires: int(time.Now().Add(p.LeaseTime).Unix()),
+			hostname: hostname,
 		}
-		err = p.SaveIPAddress(req.ClientHWAddr, &rec)
+		err = p.saveIPAddress(req.ClientHWAddr, &rec)
 		if err != nil {
 			log.Errorf("SaveIPAddress for MAC %s failed: %v", req.ClientHWAddr.String(), err)
 		}
@@ -92,11 +74,11 @@ func (p *PluginState) Handler4(req, resp *dhcpv4.DHCPv4) (*dhcpv4.DHCPv4, bool) 
 		record = &rec
 	} else {
 		// Ensure we extend the existing lease at least past when the one we're giving expires
-		expiry := time.Unix(int64(record.Expires), 0)
+		expiry := time.Unix(int64(record.expires), 0)
 		if expiry.Before(time.Now().Add(p.LeaseTime)) {
-			record.Expires = int(time.Now().Add(p.LeaseTime).Round(time.Second).Unix())
-			record.Hostname = hostname
-			err := p.SaveIPAddress(req.ClientHWAddr, record)
+			record.expires = int(time.Now().Add(p.LeaseTime).Round(time.Second).Unix())
+			record.hostname = hostname
+			err := p.saveIPAddress(req.ClientHWAddr, record)
 			if err != nil {
 				log.Errorf("Could not persist lease for MAC %s: %v", req.ClientHWAddr.String(), err)
 			}
@@ -111,7 +93,7 @@ func (p *PluginState) Handler4(req, resp *dhcpv4.DHCPv4) (*dhcpv4.DHCPv4, bool) 
 func setupRange(args ...string) (handler.Handler4, error) {
 	var (
 		err error
-		//p   PluginState
+		p   PluginState
 	)
 
 	if len(args) < 4 {
@@ -146,7 +128,7 @@ func setupRange(args ...string) (handler.Handler4, error) {
 	if err := p.registerBackingDB(filename); err != nil {
 		return nil, fmt.Errorf("could not setup lease storage: %w", err)
 	}
-	p.Recordsv4, err = LoadRecords(p.Leasedb)
+	p.Recordsv4, err = loadRecords(p.leasedb)
 	if err != nil {
 		return nil, fmt.Errorf("could not load records from file: %v", err)
 	}
@@ -162,10 +144,6 @@ func setupRange(args ...string) (handler.Handler4, error) {
 			return nil, fmt.Errorf("allocator did not re-allocate requested leased ip %v: %v", v.IP.String(), ip.String())
 		}
 	}
-	// ps.Recordsv4 = p.Recordsv4
-	// ps.allocator = p.allocator
-	// ps.LeaseTime = p.LeaseTime
-	// ps.leasedb = p.leasedb
 
 	return p.Handler4, nil
 }

@@ -21,18 +21,18 @@ import (
 
 	"github.com/coredhcp/coredhcp/plugins"
 	pl_dns "github.com/coredhcp/coredhcp/plugins/dns"
+	pl_file "github.com/coredhcp/coredhcp/plugins/file"
 	pl_leasetime "github.com/coredhcp/coredhcp/plugins/leasetime"
 	pl_mtu "github.com/coredhcp/coredhcp/plugins/mtu"
+	pl_nbp "github.com/coredhcp/coredhcp/plugins/nbp"
 	pl_netmask "github.com/coredhcp/coredhcp/plugins/netmask"
 	pl_prefix "github.com/coredhcp/coredhcp/plugins/prefix"
+	pl_range "github.com/coredhcp/coredhcp/plugins/range"
 	pl_router "github.com/coredhcp/coredhcp/plugins/router"
 	pl_searchdomains "github.com/coredhcp/coredhcp/plugins/searchdomains"
 	pl_serverid "github.com/coredhcp/coredhcp/plugins/serverid"
 	pl_sleep "github.com/coredhcp/coredhcp/plugins/sleep"
 	pl_staticroute "github.com/coredhcp/coredhcp/plugins/staticroute"
-	pl_file "github.com/wtownse/coredhcp/plugins/file"
-	pl_nbp "github.com/wtownse/coredhcp/plugins/nbp"
-	pl_range "github.com/wtownse/coredhcp/plugins/rangeplugin"
 
 	"github.com/sirupsen/logrus"
 )
@@ -108,6 +108,6 @@ func Run(log logrus.Entry, flagConfig string, flagDynamicConfig bool, dyn map[st
 	if err := srv.Wait(); err != nil {
 		log.Print(err)
 	}
-
+	
 	time.Sleep(time.Second)
 }
