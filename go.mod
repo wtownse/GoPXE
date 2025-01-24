@@ -1,4 +1,4 @@
-module github.com/wtownse/GoPXE
+module github.com/wtownse/gopxe
 
 go 1.23.0
 
@@ -11,12 +11,11 @@ require (
 	github.com/coreos/bbolt v1.3.11
 	github.com/gorilla/mux v1.8.1
 	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/pin/tftp/v3 v3.1.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/pflag v1.0.6-0.20201009195203-85dd5c8bc61c
-	github.com/wtownse/coredhcp v0.0.0-20250124134241-9b593250de94
-	github.com/wtownse/gopxe v0.0.0-20250123220952-fc680b24dbde
+	github.com/wtownse/coredhcp v0.0.0-20250124145412-6c5887a946fe
 	gopkg.in/yaml.v3 v3.0.1
-	pack.ag/tftp v1.0.0
 )
 
 require (
@@ -33,7 +32,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
-	github.com/pin/tftp/v3 v3.1.0 // indirect
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
@@ -43,6 +41,7 @@ require (
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701 // indirect
+	go.etcd.io/bbolt v1.3.11 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/exp v0.0.0-20241210194714-1829a127f884 // indirect
