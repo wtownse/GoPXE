@@ -11,7 +11,7 @@
         <h2 style="text-align: center;">Create Boot Action</h2>
         <script>
        function setKey() { 
-        var action_src = "/show/"+ document.getElementsByName("BAName")[0].value; 
+        var action_src = "/PXEBOOT2"; 
         var x = document.getElementById("BA");
         x.action = action_src;
         
@@ -22,15 +22,17 @@
        </script>
         <form name="BA" id="BA" onsubmit="setKey()" method="POST">
         <table class="center">
-            <tr><td><label>default menu item</label></td><td><input type="text" name="default" defaultValue="linux" placeholder="linux" id="default" value="default"/></td></tr>
-            <tr><td><label>label</label></td><td><input type="text" name="label" defaultValue="linux" placeholder="linux"  /></td></tr>
-            <tr><td><label>menu</label></td><td><input type="text" name="menu" defaultValue="rocky" placeholder="rocky"/></td></tr>
-            <tr><td><label>kernel</label></td><td><input type="text" name="kernel" defaultValue="centos7/vmlinuz" placeholder="centos7/vmlinuz"/></td></tr>
-            <tr><td><label>ksdevice</label></td><td><input type="text" name="ksdevice" defaultValue="link" placeholder="dhcp"/></td></tr>
-            <tr><td><label>ip</label></td><td><input type="text" name="ip" defaultValue="dhcp" placeholder="dhcp" /></td></tr>
-            <tr><td><label>load_ramdisk</label></td><td><input type="text" name="load_ramdisk" defaultValue="1" placeholder="1" /></td></tr>
-            <tr><td><label>initrd</label></td><td><input type="text" name="initrd" defaultValue="centos7/initrd.img" placeholder="centos7/initrd.img" /></tr></td>
-            <tr><td><label>Boot Action Name</label></td><td><input type="text" name="BAName" defaultValue="myfirstbootaction" placeholder="myfirstbootaction"  /></tr></td>
+            <tr><td><label>bootaction</label></td><td><input type="text" name="bootaction" defaultValue="vmtemplate" placeholder="vmtemplate" id="bootaction" value="vmtemplate"/></td></tr>
+            <tr><td><label>Kickstart file</label></td><td><input type="text" name="ksfile" defaultValue="default" placeholder="default" id="ksfile"  /></td></tr>
+            <tr><td><label>Operating System</label></td><td><input type="text" name="os" defaultValue="rocky" placeholder="rocky" id="os"/></td></tr>
+            <tr><td><label>Version</label></td><td><input type="text" name="version" defaultValue="7.5.1804" placeholder="7.5.1804" id="version"/></td></tr>
+            <tr><td><label>Hostname</label></td><td><input type="text" name="hostname" defaultValue="test-myvm1.local" placeholder="test-myvm1.local" id="hostname"/></td></tr>
+            <tr><td><label>Ip Address</label></td><td><input type="text" name="ip" defaultValue="192.168.1.10" placeholder="192.168.1.10" id="ip" /></td></tr>
+            <tr><td><label>Netmask</label></td><td><input type="text" name="netmask" defaultValue="255.255.255.0" placeholder="255.255.255.0" id="netmask" /></td></tr>
+            <tr><td><label>Name Server 1</label></td><td><input type="text" name="ns1" defaultValue="8.8.8.8" placeholder="8.8.8.8" id="ns1" /></tr></td>
+            <tr><td><label>Name Server 2</label></td><td><input type="text" name="ns2" defaultValue="8.8.4.4" placeholder="8.8.4.4" id="ns2" /></tr></td>
+            <tr><td><label>Gateway</label></td><td><input type="text" name="gw" defaultValue="192.168.1.1" placeholder="192.168.1.1" id="gw"  /></tr></td>
+            <tr><td><label>UUID or Macaddress</label></td><td><input type="text" name="uuid" defaultValue="11:11:11:11:11:11" placeholder="11:11:11:11:11:11" id="uuid"  /></tr></td>
             <tr><td><button type="submit">Submit</button></td></tr>
         </table>
         </form>
