@@ -31,14 +31,11 @@ func New() http.Handler {
 	router.HandleFunc("/bootaction", h.GetAllBA).Methods("GET")
 	router.HandleFunc("/kickstart/", h.KsGenerate)
 	router.HandleFunc("/pxeboot", h.PXEBOOT).Methods("POST")
-	router.HandleFunc("/createbootaction", h.CreateBootAction).Methods("GET")
-	router.HandleFunc("/show/{key}", h.ShowTest).Methods("POST")
 	router.HandleFunc("/acparse", ac.Create)
 	router.HandleFunc("/staticdhcp", static.StaticDHCP)
 	router.HandleFunc("/getdhcpentry/{mac}", static.GetDHCPEntry)
 	router.HandleFunc("/getdhcpentries", static.GetDHCPEntries).Methods("GET")
 	router.HandleFunc("/getdhcpentriesjson", static.GetDHCPEntriesJSON).Methods("GET")
-
 	h.LoadTemplates()
 	return router
 }

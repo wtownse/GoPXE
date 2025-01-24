@@ -61,7 +61,6 @@ func LoadTemplates() {
 	Templates["actions"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/bootactions.html"))
 	Templates["pxeboot"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/pxeboot.html"))
 	Templates["pxeinfo"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/pxeinfo.html"))
-	Templates["createbootaction"] = template.Must(template.ParseFiles(baseTemplate, "public/pages/createbootaction.html"))
 }
 
 func getBucket() string {
@@ -106,47 +105,7 @@ func KsGenerate(w http.ResponseWriter, r *http.Request) {
 	err = t.Execute(w, data)
 	checkError(err)
 }
-func ShowTest(w http.ResponseWriter, r *http.Request) {
-	var action ACTIONTYPE
-	vars2 := mux.Vars(r)
-	key := vars2["key"]
-	r.ParseForm()
 
-	vars := r.Form
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	if err != nil {
-		panic(err)
-	}
-
-	if err := r.Body.Close(); err != nil {
-		panic(err)
-	}
-
-	if err := json.Unmarshal(body, &action); err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(422) // unprocessable entity
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
-	}
-	log.Printf("Key %s\n", key)
-	log.Printf("Action %s\n", action.Default)
-	log.Println(vars)
-	log.Println(vars["default"][0])
-	value := fmt.Sprintf("default %s\n label %s\n MENU LABEL %s\n KERNEL %s\n APPEND ksdevice=%s ip=%s load_ramdisk=%s initrd=%s", vars["default"][0], vars["label"][0], vars["menu"][0], vars["kernel"][0], vars["ksdevice"][0], vars["ip"][0], vars["load_ramdisk"][0], vars["initrd"][0])
-	err1 := conn.PutBootAction(getBucket(), key, value)
-	if err1 != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusBadRequest)
-		io.WriteString(w, `{"Status": "Couldn't store bootaction"}`)
-		log.Printf("Error %s\n", err1)
-	} else {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusCreated)
-		io.WriteString(w, `{"Status":"bootaction recorded"}`)
-		log.Printf("Bootaction %s recorded\n", key)
-	}
-}
 func GetAllBA(w http.ResponseWriter, r *http.Request) {
 	var actions map[string]string
 
@@ -220,6 +179,7 @@ func PutBA(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, `{"Status": "Couldn't store bootaction, tftpd path doesn't exist"}`)
 		return
 	}
+
 	value := fmt.Sprintf("default %s\n label %s\n MENU LABEL %s\n KERNEL %s\n APPEND ksdevice=%s ip=%s load_ramdisk=%s initrd=%s", action.Default, action.Label, action.Menu, action.Kernel, action.KSDevice, action.IP, action.LoadRamdisk, action.Initrd)
 	valueEFI := fmt.Sprintf(" set default=0\n set timeout=60\n menuentry %s {\n linuxeefi %s\n initrdefi %s\n}", action.Label, action.Kernel, action.Initrd)
 	log.Printf(valueEFI)
@@ -235,7 +195,7 @@ func PutBA(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusCreated)
 		io.WriteString(w, `{"Status":"bootaction recorded"}`)
-		log.Printf("Bootaction %s recorded\n", key)
+		return
 	}
 
 }
@@ -252,13 +212,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
-func CreateBootAction(w http.ResponseWriter, r *http.Request) {
 
-	if err := Templates["createbootaction"].Execute(w, ""); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	log.Print("Called create boot action")
-}
 func BootactionHandler(w http.ResponseWriter, r *http.Request) {
 	_, v := conn.GetAllBootActions("bootactions")
 
@@ -350,8 +304,7 @@ func PXEBOOT(w http.ResponseWriter, r *http.Request) {
 	checkError(err)
 
 	err = mkBootEntry(filePath, bootAction)
-	mkBootEntry(EFIfilePath, EFIresults)
-	
+	err = mkBootEntry(EFIfilePath, EFIresults)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusBadRequest)
